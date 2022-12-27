@@ -35,6 +35,8 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     private BatchProcessor batchProcessor;
     @Autowired
     private BatchWriter batchWriter;
+    @Autowired
+    private BatchExecutionListener batchExecutionListener;
 
     @Value("${poct.user.issuer}")
     private String issuer;
@@ -43,6 +45,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     public Job migrateUsersJob() {
         return jobBuilderFactory.get("migrateUsersJob")
                 .start(batchStep())
+                .listener(batchExecutionListener)
                 .build();
     }
 
