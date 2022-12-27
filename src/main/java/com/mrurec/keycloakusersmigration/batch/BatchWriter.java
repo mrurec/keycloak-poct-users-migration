@@ -12,17 +12,8 @@ import java.util.List;
 public class BatchWriter implements ItemWriter<List<PoctUser>> {
     @Autowired
     private PoctUserRepository repository;
-
-    /*@Override
-    public void write(Chunk<? extends List<PoctUser>> chunk) throws Exception {
-        chunk.iterator().forEachRemaining(poctUsers -> poctUsers.forEach(poctUser -> {
-            System.out.println(poctUser);
-//            repository.save(poctUser);
-        }));
-    }*/
-
     @Override
     public void write(List<? extends List<PoctUser>> list) throws Exception {
-//        list.iterator().forEachRemaining(poctUsers -> poctUsers.forEach(poctUser -> repository.save(poctUser)));
+        list.iterator().forEachRemaining(poctUsers -> poctUsers.forEach(poctUser -> repository.save(poctUser)));
     }
 }

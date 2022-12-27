@@ -34,7 +34,7 @@ public class BatchProcessor implements ItemProcessor<String, List<PoctUser>> {
         String lastName = poctUsers.get(0).getNameFamily();
         String newSubject;
 
-        /*try (Keycloak kc = KeycloakBuilder.builder()
+        try (Keycloak kc = KeycloakBuilder.builder()
                 .serverUrl(keycloakProperties.getServerUrl())
                 .realm("master")
                 .clientId("admin-cli")
@@ -63,7 +63,7 @@ public class BatchProcessor implements ItemProcessor<String, List<PoctUser>> {
         for (PoctUser poctUser : poctUsers) {
             poctUser.setIssuer(issuer);
             poctUser.setSubject(newSubject);
-        }*/
+        }
         return poctUsers;
     }
 }
