@@ -33,10 +33,10 @@ public class BatchExecutionListener implements JobExecutionListener {
     @Override
     public void afterJob(JobExecution jobExecution) {
         ExitStatus exitStatus = jobExecution.getExitStatus();
-        if (ExitStatus.FAILED.equals(exitStatus)) {
+        if (ExitStatus.FAILED.getExitCode().equals(exitStatus.getExitCode())) {
             jobExecution.getAllFailureExceptions()
                     .forEach(Throwable::printStackTrace);
-            // TODO: 27.12.2022 [yury] ?
+            // TODO: 27.12.2022 [yury] if COMPLETED show info
         }
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 public interface PoctUserRepository extends JpaRepository<PoctUser, String> {
     List<PoctUser> findByEmail(String email);
 
-    @Query(value = "select distinct u.email from userview u where u.email is not null and u.issuer <> :issuer and u.zorgportaalid is null order by u.email --#pageable\\n",
+    @Query(value = "select distinct u.email from userview u where u.email is not null and u.issuer is not null and u.issuer <> :issuer  order by u.email --#pageable\\n",
             nativeQuery = true)
     Page<String> findEmailsForBatchProcessing(@Param("issuer") String issuer, Pageable pageable);
 }
