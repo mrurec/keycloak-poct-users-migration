@@ -2,6 +2,7 @@ package com.mrurec.keycloakusersmigration.batch;
 
 import com.mrurec.keycloakusersmigration.keycloak.KeycloakProperties;
 import com.mrurec.keycloakusersmigration.poct.model.PoctUser;
+import com.mrurec.keycloakusersmigration.poct.repository.OrganizationRepository;
 import com.mrurec.keycloakusersmigration.poct.repository.PoctUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
@@ -16,7 +17,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class BatchProcessor implements ItemProcessor<String, List<PoctUser>> {
-    private final PoctUserRepository repository;
+    private final PoctUserRepository poctUserRepository;
+    private final OrganizationRepository organizationRepository;
     private final KeycloakProperties keycloakProperties;
     private final Keycloak kc;
 
@@ -25,17 +27,14 @@ public class BatchProcessor implements ItemProcessor<String, List<PoctUser>> {
 
     @Override
     public List<PoctUser> process(String email) throws Exception {
-        List<PoctUser> poctUsers = repository.findByEmail(email);
+        List<PoctUser> poctUsers = poctUserRepository.findByEmail(email);
         String firstName = poctUsers.get(0).getNameGiven();
         String lastName = poctUsers.get(0).getNameFamily();
-        String newSubject;
 
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue("Test123456");
+        credential.setValue(keycloakProperties.getTemporaryPassword());
         credential.setTemporary(true);
-
-        // TODO: 22.12.2022 [yury] after setting SMTP remove credentials things
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(email);
@@ -43,10 +42,23 @@ public class BatchProcessor implements ItemProcessor<String, List<PoctUser>> {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEnabled(true);
+        user.setEmailVerified(true);
         user.setCredentials(List.of(credential));
+
+        List<String> organizationIds = poctUsers.stream()
+                .map(PoctUser::getOrganizationid)
+                .toList();
+
+        for (String organizationId : organizationIds) {
+            if (organizationRepository.isMfaRequiredForOrganisation(organizationId)) {
+                user.setRequiredActions(List.of("CONFIGURE_TOTP_WITH_AMR"));
+                break;
+            }
+        }
+
         kc.realm(keycloakProperties.getRealm()).users().create(user);
         List<UserRepresentation> userRepresentations = kc.realm(keycloakProperties.getRealm()).users().search(email);
-        newSubject = userRepresentations.get(0).getId();
+        String newSubject = userRepresentations.get(0).getId();
 
         for (PoctUser poctUser : poctUsers) {
             poctUser.setIssuer(issuer);

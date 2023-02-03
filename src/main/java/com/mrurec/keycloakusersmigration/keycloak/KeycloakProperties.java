@@ -14,4 +14,5 @@ public class KeycloakProperties {
     private String realm;
     private String adminUsername;
     private String adminPassword;
+    private String temporaryPassword;
 }

@@ -81,6 +81,7 @@ public class BatchConfiguration implements BatchConfigurer {
     @Bean
     public Step batchStep() {
         return stepBuilderFactory.get("batchStep")
+                .allowStartIfComplete(true)
                 .transactionManager(getTransactionManager())
                 .<String, List<PoctUser>>chunk(1)
                 .reader(itemReader())
